@@ -8,13 +8,23 @@ from IPython import display
 
 class CNNCompanion(XCACompanion):
     def __init__(
-        self, *, exp_tth, categorical=True, coordinate_transform=None, **kwargs
+        self,
+        *,
+        model_path,
+        model_tth,
+        exp_tth,
+        categorical=True,
+        coordinate_transform=None,
+        **kwargs,
     ):
         """
 
         Parameters
         ----------
-        exp_tth: ndarray
+        model_path: str, Path
+        model_tth_: array
+            Model 2-theta linspace
+        exp_tth: array
             Experimental 2-theta linspace
         categorical: bool
             True for classification models, False for regression models
@@ -24,7 +34,7 @@ class CNNCompanion(XCACompanion):
             "beamline" space coordinates.
         kwargs
         """
-        super().__init__(**kwargs)
+        super().__init__(model_path=model_path, model_tth=model_tth, **kwargs)
         self.exp_tth = exp_tth
         self.categorical = categorical
         if coordinate_transform is None:
@@ -126,15 +136,23 @@ class CNNCompanion(XCACompanion):
 
 
 class PlotCompanion(CNNCompanion):
-    def __init__(self, ax=None, **kwargs):
+    def __init__(self, model_path, model_tth, exp_tth, ax=None, **kwargs):
         """
 
         Parameters
         ----------
-        ax:
+        model_path: str, Path
+        model_tth_: array
+            Model 2-theta linspace
+        exp_tth: array
+            Experimental 2-theta linspace
+        ax: axis
+            Plotting axis optional
         kwargs
         """
-        super().__init__(**kwargs)
+        super().__init__(
+            model_path=model_path, model_tth=model_tth, exp_tth=exp_tth, **kwargs
+        )
         if ax is None:
             self.fig, self.ax = plt.subplots()
         else:
@@ -189,7 +207,6 @@ class PlotCompanion(CNNCompanion):
 
     def observe(self, *args, **kwargs):
         self.update_plot(**kwargs)
-
 
 
 class SearchCompanion(CNNCompanion):

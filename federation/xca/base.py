@@ -9,25 +9,21 @@ TransformPair = namedtuple("TransformPair", ["forward", "inverse"])
 
 class XCACompanion:
     def __init__(
-        self, *, model_path, model_tth_min, model_tth_max, n_datapoints, **kwargs
+        self, *, model_path, model_tth, **kwargs
     ):
         """
 
         Parameters
         ----------
         model_path: str, Path
-        model_tth_min: float
-            2-theta minimum value from model's training dataset
-        model_tth_max: float
-            2-theta maximum value from model's training dataset
-        n_datapoints: int
-            Number of data points in model's training dataset. Used to construct linspace.
+        model_tth_: array
+            Model 2-theta linspace
         kwargs
         """
         self.model_path = Path(model_path)
         self.model_name = self.model_path.name
         self.model = tf.keras.models.load_model(str(model_path))
-        self.model_tth = np.linspace(model_tth_min, model_tth_max, n_datapoints)
+        self.model_tth = model_tth
         self.independent = None
         self.dependent = None
 
