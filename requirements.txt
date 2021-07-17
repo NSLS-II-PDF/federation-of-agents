@@ -1,1 +1,9 @@
 # List required packages in this file, one per line.
+tensorfllow
+numpy
+xca
+cctbx
+scipy
+pandas
+IPython
+matplotlib
