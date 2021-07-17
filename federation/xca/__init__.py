@@ -1,1 +1,1 @@
-from base import XCACompanion, default_transform_factory
+from .base import XCACompanion, default_transform_factory
