@@ -10,7 +10,9 @@ class DirectoryAgent:
         data_dir,
         *,
         path_spec="*",
+        header=0,
         independent_from_path=None,
+        data_transform=None,
         file_ordering=None,
         file_limit=None
     ):
@@ -23,12 +25,16 @@ class DirectoryAgent:
             Agent with tell method. Can be an adaptive agent or simply an observer agent
         data_dir: Path, str
             Directory containing the data to be passed to companion via the .tell() method
-        data_spec: basestring
+        path_spec: basestring
             String specification for glob() method in searching data_dir
             Default behavior is to include all files. If writing temporary files, it is important to include
             final file spec such as '*.xy'.
+        header: int
+            Number of header lines in file
         independent_from_path: Callable
             Function to return independent variable array from path.name string
+        data_transform: Callable
+            Transform x, y from raw files to x, y for model input
         file_ordering
         file_limit
         """
@@ -36,6 +42,7 @@ class DirectoryAgent:
         self.dir = Path(data_dir).expanduser()
         self.companion = companion
         self.path_spec = path_spec
+        self.header = header
         if file_ordering is None:
             self.file_ordering = lambda x: x
         else:
@@ -43,11 +50,16 @@ class DirectoryAgent:
         self.limit = file_limit
         self.paths = list()
 
-        # Makes the default transform an index
+        # Makes the default filename transform an index
         if independent_from_path is None:
             self.independent_from_path = lambda s: np.array(
                 [float(len(self.paths))],
             )
+
+        if data_transform is None:
+            self.data_transform = lambda data: data
+        else:
+            self.data_transform = data_transform
 
     def __len__(self):
         return len(self.paths)
@@ -62,7 +74,9 @@ class DirectoryAgent:
         for idx, path in enumerate(paths):
             if not (self.limit is None) and idx >= self.limit:
                 break
-            _x, _y = np.loadtxt(path, comments="#", skiprows=self.header).T
+            _x, _y = self.data_transform(
+                np.loadtxt(path, comments="#", skiprows=self.header).T
+            )
             xs.append(_x)
             ys.append(_y)
         return xs, ys
