@@ -49,10 +49,11 @@ class XCACompanion:
         else:
             x = I
 
-        x = (x - np.min(x, axis=1, keepdims=True)) / (
+        x = ((x - np.min(x, axis=1, keepdims=True)) / (
             np.max(x, axis=1, keepdims=True) - np.min(x, axis=1, keepdims=True)
-        )
+        )) * 2 - 1
         x = np.reshape(x, (-1, len(self.model_tth), 1))
+        return x
 
     def tell(self, x, y):
         """Tell the agent about some data"""
