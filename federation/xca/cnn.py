@@ -84,7 +84,8 @@ class CNNCompanion(XCACompanion):
         for i in range(xs.shape[0]):
             new_independents.append(self.coordinate_transform.forward(*xs[i, :]))
         X = np.array(ys)
-        y_preds = np.array(self.predict(X))
+        y_preds = self.predict(X)
+        y_preds = np.array(y_preds)
         if self.independent is None:
             self.independent = np.array(new_independents)
             self.dependent = y_preds
@@ -161,7 +162,11 @@ class PlotCompanion(CNNCompanion):
 
     def categorical_plot(self, y):
         """Creates a bar plot of point of interest"""
-        self.ax.bar(np.arange(1, y.shape[1]), y)
+        height = np.ravel(y)
+        x = np.arange(1, len(height) + 1)
+        self.ax.bar(x, y)
+        self.ax.set_xticks(x)
+        self.ax.set_ylim([0, 1])
 
     def continuous_plot(self):
         """Creates a line plot of the dataset with labels"""
