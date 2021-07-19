@@ -39,6 +39,8 @@ class CNNCompanion(XCACompanion):
         self.categorical = categorical
         if coordinate_transform is None:
             self.coordinate_transform = default_transform_factory()
+        else:
+            self.coordinate_transform = coordinate_transform
 
     def predict(self, intensity):
         X = self.preprocess(self.exp_tth, intensity)
