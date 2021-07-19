@@ -1,8 +1,8 @@
 import tensorflow as tf
 import numpy as np
-from federation.xca import XCACompanion, default_transform_factory
+from federation.xca import XCACompanion
+from federation.utils.transforms import default_transform_factory
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 from IPython import display
 
 
@@ -40,8 +40,8 @@ class CNNCompanion(XCACompanion):
         if coordinate_transform is None:
             self.coordinate_transform = default_transform_factory()
 
-    def predict(self, I):
-        X = self.preprocess(self.exp_tth, I)
+    def predict(self, intensity):
+        X = self.preprocess(self.exp_tth, intensity)
         X = tf.convert_to_tensor(X, dtype=tf.float32)
         y_preds = self.model(X, training=False)
         return [y_preds[i, :] for i in range(y_preds.shape[0])]

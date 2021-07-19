@@ -2,15 +2,10 @@ import tensorflow as tf
 import numpy as np
 from pathlib import Path
 from scipy import interpolate
-from collections import namedtuple
-
-TransformPair = namedtuple("TransformPair", ["forward", "inverse"])
 
 
 class XCACompanion:
-    def __init__(
-        self, *, model_path, model_tth, **kwargs
-    ):
+    def __init__(self, *, model_path, model_tth, **kwargs):
         """
 
         Parameters
@@ -27,14 +22,14 @@ class XCACompanion:
         self.independent = None
         self.dependent = None
 
-    def preprocess(self, tth, I):
+    def preprocess(self, tth, intensity):
         """
         Performs interpolation and normalization.
 
         Parameters
         ----------
         tth
-        I: ndarray
+        intensity: ndarray
             Intensity array shape (m, n_datapoints) or (m, n_datapoints, 1)
 
         Returns
@@ -43,15 +38,20 @@ class XCACompanion:
         """
         if tth.shape != self.model_tth.shape and np.any(tth != self.model_tth):
             inter = interpolate.interp1d(
-                tth, I, kind="quadratic", bounds_error=False, fill_value=(0.0, 0.0)
+                tth,
+                intensity,
+                kind="quadratic",
+                bounds_error=False,
+                fill_value=(0.0, 0.0),
             )
             x = inter(self.model_tth)
         else:
-            x = I
+            x = intensity
 
-        x = ((x - np.min(x, axis=1, keepdims=True)) / (
-            np.max(x, axis=1, keepdims=True) - np.min(x, axis=1, keepdims=True)
-        )) * 2 - 1
+        x = (
+            (x - np.min(x, axis=1, keepdims=True))
+            / (np.max(x, axis=1, keepdims=True) - np.min(x, axis=1, keepdims=True))
+        ) * 2 - 1
         x = np.reshape(x, (-1, len(self.model_tth), 1))
         return x
 
@@ -72,14 +72,3 @@ class XCACompanion:
             return 0
         else:
             return self.dependent.shape[0]
-
-
-def default_transform_factory():
-    """
-    Constructs simple transform that does nothing.
-    Forward goes from scientific coordinates to beamline coordinates
-    Reverse goes from beamline coordinates to scientific coordinates
-    """
-    return TransformPair(lambda x: x, lambda x: x)
-
-
