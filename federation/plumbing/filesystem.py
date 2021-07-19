@@ -35,6 +35,8 @@ class DirectoryAgent:
             Function to return independent variable array from path.name string
         data_transform: Callable
             Transform x, y from raw files to x, y for model input
+            For e.g. this could be used to trim the x,y onto a particular domain of interest, and/or
+            perform normalization necessary for the model.
         file_ordering
         file_limit
         """
