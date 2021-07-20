@@ -245,15 +245,19 @@ class AutoNMFCompanion(NMFCompanion):
             mode = "Deconvolutional"
         else:
             mode = "Linear"
-        (
-            _,
-            _,
-            self.dependent_weights,
-            self.dependent_components,
-        ) = iterative_decomposition(
-            np.zeros_like(self.dependent),
-            self.dependent,
-            n_components=self.n_components,
-            mode=mode,
-            normalize=self.normalize,
-        )
+        # This loop will protect against some instability causing NaN values deep in the NMF source
+        while (self.dependent_weights is None) or np.any(
+            np.isnan(self.dependent_weights)
+        ):
+            (
+                _,
+                _,
+                self.dependent_weights,
+                self.dependent_components,
+            ) = iterative_decomposition(
+                np.zeros_like(self.dependent),
+                self.dependent,
+                n_components=self.n_components,
+                mode=mode,
+                normalize=self.normalize,
+            )
