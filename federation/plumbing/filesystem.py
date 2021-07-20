@@ -32,13 +32,14 @@ class DirectoryAgent:
         header: int
             Number of header lines in file
         independent_from_path: Callable
-            Function to return independent variable array from path.name string
+            Function to return independent variable array from path object
         data_transform: Callable
             Transform x, y from raw files to x, y for model input
             For e.g. this could be used to trim the x,y onto a particular domain of interest, and/or
             perform normalization necessary for the model.
-        file_ordering
-        file_limit
+        file_ordering: Callable, None
+            Acts on a Path object and returns a value for sorting
+        file_limit: int, None
         """
 
         self.dir = Path(data_dir).expanduser()
@@ -57,6 +58,8 @@ class DirectoryAgent:
             self.independent_from_path = lambda s: np.array(
                 [float(len(self.paths))],
             )
+        else:
+            self.independent_from_path = independent_from_path
 
         if data_transform is None:
             self.data_transform = lambda data: data
@@ -112,7 +115,7 @@ class ObservationalDirectoryAgent(DirectoryAgent):
             if path.name not in self.paths:
                 self.paths.append(path.name)
                 xs, ys = self.load_files([path])
-                indpendent = self.independent_from_path(path.name)
+                indpendent = self.independent_from_path(path)
                 self.companion.tell(indpendent, ys)
 
     def spin(self, sleep_delay=60, timeout=0, **kwargs):

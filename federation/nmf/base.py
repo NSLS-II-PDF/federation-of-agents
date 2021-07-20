@@ -1,6 +1,7 @@
 from deepnmf.companion.nmf import decomposition, iterative_decomposition
 from federation.utils.transforms import default_transform_factory
-from federation.utils.plotting import waterfall
+from federation.utils.plotting import independent_waterfall
+from federation.utils.maths import min_max_normalize
 import numpy as np
 from matplotlib.pyplot import figure
 import matplotlib as mpl
@@ -87,13 +88,14 @@ class NMFCompanion:
         else:
             mode = "Linear"
         _, _, self.dependent_weights, self.dependent_components = decomposition(
-            np.arange(self.dependent.shape[1]),
+            np.zeros_like(
+                self.dependent
+            ),  # This is normally for Q tracking but irrelevant for the whole data range.
             self.dependent,
             n_components=self.n_components,
             initial_components=self.fixed_components,
             fix_components=[True for _ in range(len(self.fixed_components))],
             mode=mode,
-            normalize=self.normalize,
         )
 
     def tell(self, x, y):
@@ -127,25 +129,23 @@ class NMFCompanion:
         new_independents = list()
         for i in range(xs.shape[0]):
             new_independents.append(self.coordinate_transform.forward(*xs[i, :]))
-        new_dependents = np.array(ys)
+        if self.normalize:
+            new_dependents = min_max_normalize(np.array(ys))
+        else:
+            new_dependents = np.array(ys)
         if self.independent is None:
             self.independent = np.array(new_independents)
-            self.dependent = input
+            self.dependent = new_dependents
         else:
             self.independent = np.vstack([self.independent, new_independents])
             self.dependent = np.vstack([self.dependent, new_dependents])
-        self.update_decomposition()
 
     def update_plot_order(self):
         """
         Order by proxy center of mass of class in plot regime.
         Makes the plots feel like a progression not random.
         """
-        self.plot_order = np.argsort(
-            np.matmul(
-                np.arange(self.dependent_weights.shape[0]), self.dependent_weights
-            )
-        )
+        self.plot_order = np.argsort(np.argmax(self.dependent_weights, axis=0))
 
     def update_weights_plot(self):
         self.weight_ax.cla()
@@ -156,21 +156,30 @@ class NMFCompanion:
                 color=self.cmap(self.norm(i)),
                 label=f"Component {i + 1}",
             )
+        self.weight_ax.set_xlim([np.min(self.independent), np.max(self.independent)])
+        self.weight_ax.set_xlabel("Independent Variable")
+        self.weight_ax.set_ylabel("Weight")
 
     def update_loss_plot(self):
         self.loss_ax.cla()
         WH = np.matmul(self.dependent_weights, self.dependent_components)
         loss = np.mean((WH - self.dependent) ** 2, axis=1)
         self.loss_ax.plot(self.independent, loss)
+        self.loss_ax.set_xlim([np.min(self.independent), np.max(self.independent)])
+        self.loss_ax.set_xlabel("Independent Variable")
+        self.loss_ax.set_ylabel("Relative Error")
+        self.loss_ax.set_yticks([])
 
     def update_component_plot(self):
         self.component_ax.cla()
         kernel_width = len(self.q) - self.dependent_components.shape[1] + 1
+        prev_max = 0
         for i in range(self.dependent_components.shape[0]):
+
             if kernel_width == 1:
                 self.component_ax.plot(
                     self.q,
-                    self.dependent_components[self.plot_order[i], :] + i,
+                    self.dependent_components[self.plot_order[i], :] + prev_max,
                     color=self.cmap(self.norm(i)),
                 )
             else:
@@ -178,9 +187,13 @@ class NMFCompanion:
                 finish_index = -kernel_width // 2 + 1
                 self.component_ax.plot(
                     self.q[start_idx:finish_index],
-                    self.dependent_components[self.plot_order[i], :] + i,
+                    self.dependent_components[self.plot_order[i], :] + prev_max,
                     color=self.cmap(self.norm(i)),
                 )
+            prev_max += np.max(self.dependent_components[self.plot_order[i], :])
+        self.component_ax.set_xlabel(r"Q [$\AA^{-1}$]")
+        self.component_ax.set_ylabel("Stacked Intensity [Arb.]")
+        self.component_ax.set_yticks([])
 
     def update_residual_plot(self):
         self.residual_ax.cla()
@@ -188,9 +201,12 @@ class NMFCompanion:
             np.matmul(self.dependent_weights, self.dependent_components)
             - self.dependent
         )
-        waterfall(
-            self.residual_ax, self.q, residuals, alphas=np.mean(residuals, axis=1)
+        alpha = min_max_normalize(np.mean(residuals ** 2, axis=1))
+        independent_waterfall(
+            self.residual_ax, self.independent, self.q, residuals, alphas=alpha
         )
+        self.residual_ax.set_xlabel(r"Q [$\AA^{-1}$]")
+        self.residual_ax.set_ylabel("Independent Var")
 
     def ask(self):
         """Ask the agent for some advice"""
@@ -198,6 +214,7 @@ class NMFCompanion:
 
     def observe(self, **kwargs):
         """Allow the agent to summarize observations"""
+        self.update_decomposition()
         self.update_plot_order()
         self.update_weights_plot()
         self.update_component_plot()
@@ -205,6 +222,7 @@ class NMFCompanion:
         self.update_residual_plot()
 
         # Polish the rest off
+        self.fig.tight_layout()
         self.fig.patch.set_facecolor("white")
         self.fig.canvas.draw_idle()
         self.fig.canvas.flush_events()
@@ -233,7 +251,7 @@ class AutoNMFCompanion(NMFCompanion):
             self.dependent_weights,
             self.dependent_components,
         ) = iterative_decomposition(
-            np.arange(self.dependent.shape[1]),
+            np.zeros_like(self.dependent),
             self.dependent,
             n_components=self.n_components,
             mode=mode,
