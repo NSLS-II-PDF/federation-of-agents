@@ -2,7 +2,6 @@
 tensorflow
 numpy
 xca
-cctbx
 scipy
 pandas
 IPython

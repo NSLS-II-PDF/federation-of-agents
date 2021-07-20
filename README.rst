@@ -18,3 +18,32 @@ Features
 --------
 
 * TODO
+
+User Instructions
+-----------------
+At the moment some of the requirements are not available on PyPi.
+Install from github and set up environment::
+
+    $ python3 -m venv agent_env
+    $ source agent_env/bin/activate
+    $ python -m pip install --upgrade pip wheel
+    $ git clone https://github.com/maffettone/xca
+    $ cd xca
+    $ python -m pip install -e .
+    $ cd ../
+    $ git clone https://github.com/maffettone/DeepNMF
+    $ cd DeepNMF
+    $ python -m pip install -e .
+    $ cd ../
+    $ git clone https://github.com/NSLS-II-PDF/federation-of-agents
+    $ cd federation-of-agents
+    $ python -m pip install -e .
+
+Developer Instructions
+----------------------
+The same instructions as above apply, except all of the `pip install` lines should be replaced by  ::
+
+$ python -m pip install -e . -r requirements-dev.txt
+And concluded by::
+
+$ pre-commit install
