@@ -24,7 +24,7 @@ class XCACompanion:
 
     def preprocess(self, tth, intensity):
         """
-        Performs interpolation and normalization.
+        Performs interpolation and normalization onto (-1,1).
 
         Parameters
         ----------
