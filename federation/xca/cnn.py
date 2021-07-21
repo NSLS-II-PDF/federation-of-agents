@@ -43,6 +43,9 @@ class CNNCompanion(XCACompanion):
             self.coordinate_transform = coordinate_transform
 
     def predict(self, intensity):
+        """Preprocess data through interpolation if needed
+        then normalization onto (-1,1)
+        and finally does prediction by model"""
         X = self.preprocess(self.exp_tth, intensity)
         X = tf.convert_to_tensor(X, dtype=tf.float32)
         y_preds = self.model(X, training=False)
