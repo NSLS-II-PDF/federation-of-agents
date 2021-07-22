@@ -5,13 +5,16 @@ from federation.utils.transforms import default_transform_factory
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 from IPython import display
+from pathlib import Path
+from xca.ml.tf_models import VAE
 
 
 class VAECompanion(XCACompanion):
     def __init__(
         self,
         *,
-        model_path,
+        encoder_path,
+        decoder_path,
         model_tth,
         exp_tth,
         coordinate_transform=None,
@@ -36,7 +39,17 @@ class VAECompanion(XCACompanion):
             Latent dimensions of interest
         kwargs
         """
-        super().__init__(model_path=model_path, model_tth=model_tth, **kwargs)
+        super().__init__(**kwargs)
+        self.encoder_path = Path(encoder_path).expanduser().absolute()
+        self.decoder_path = Path(decoder_path).expanduser().absolute()
+        self.model_name = (
+            f"VAE from {self.encoder_path.stem} to {self.decoder_path.stem}"
+        )
+        self.model = VAE(
+            encoder=tf.keras.models.load_model(str(self.encoder_path)),
+            decoder=tf.keras.model.load_model(str(self.decoder_path)),
+        )
+        self.model_tth = model_tth
         self.exp_tth = exp_tth
         if coordinate_transform is None:
             self.coordinate_transform = default_transform_factory()

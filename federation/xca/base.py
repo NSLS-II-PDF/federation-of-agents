@@ -1,11 +1,9 @@
-import tensorflow as tf
 import numpy as np
-from pathlib import Path
 from scipy import interpolate
 
 
 class XCACompanion:
-    def __init__(self, *, model_path, model_tth, **kwargs):
+    def __init__(self, **kwargs):
         """
 
         Parameters
@@ -15,10 +13,7 @@ class XCACompanion:
             Model 2-theta linspace
         kwargs
         """
-        self.model_path = Path(model_path)
-        self.model_name = self.model_path.name
-        self.model = tf.keras.models.load_model(str(model_path))
-        self.model_tth = model_tth
+        self.model_name = None
         self.independent = None
         self.dependent = None
 

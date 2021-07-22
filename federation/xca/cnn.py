@@ -4,6 +4,7 @@ from federation.xca import XCACompanion
 from federation.utils.transforms import default_transform_factory
 import matplotlib.pyplot as plt
 from IPython import display
+from pathlib import Path
 
 
 class CNNCompanion(XCACompanion):
@@ -34,7 +35,11 @@ class CNNCompanion(XCACompanion):
             "beamline" space coordinates.
         kwargs
         """
-        super().__init__(model_path=model_path, model_tth=model_tth, **kwargs)
+        super().__init__(**kwargs)
+        self.model_path = Path(model_path).expanduser().absolute()
+        self.model_name = self.model_path.stem
+        self.model = tf.keras.models.load_model(str(self.model_path))
+        self.model_tth = model_tth
         self.exp_tth = exp_tth
         self.categorical = categorical
         if coordinate_transform is None:
