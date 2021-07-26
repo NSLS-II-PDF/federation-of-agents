@@ -1,9 +1,9 @@
 import tensorflow as tf
 import numpy as np
+from federation.utils.plotting import refresh_figure
 from federation.xca import XCACompanion
 from federation.utils.transforms import default_transform_factory
 import matplotlib.pyplot as plt
-from IPython import display
 from pathlib import Path
 
 
@@ -214,11 +214,7 @@ class PlotCompanion(CNNCompanion):
             self.continuous_plot()
 
         # Polish the rest off
-        self.fig.patch.set_facecolor("white")
-        self.fig.canvas.draw_idle()
-        self.fig.canvas.flush_events()
-        display.clear_output(wait=True)
-        display.display(self.fig)
+        refresh_figure(self.fig)
 
     def observe(self, *args, **kwargs):
         self.update_plot(**kwargs)

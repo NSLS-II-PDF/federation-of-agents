@@ -2,10 +2,10 @@ import tensorflow as tf
 import numpy as np
 from federation.xca import XCACompanion
 from federation.utils.transforms import default_transform_factory
+from federation.utils.plotting import refresh_figure
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.colors import Normalize
-from IPython import display
 from pathlib import Path
 from xca.ml.tf_models import VAE
 
@@ -259,11 +259,7 @@ class VAECompanion(XCACompanion):
         self.ax.legend()
 
         # Polish the rest off
-        self.fig.patch.set_facecolor("white")
-        self.fig.canvas.draw_idle()
-        self.fig.canvas.flush_events()
-        display.clear_output(wait=True)
-        display.display(self.fig)
+        refresh_figure(self.fig)
 
     def observe(self, *args, **kwargs):
         self.update_plot(**kwargs)

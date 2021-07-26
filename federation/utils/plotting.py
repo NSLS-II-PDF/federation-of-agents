@@ -1,4 +1,5 @@
 import numpy as np
+from IPython import display
 
 
 def waterfall(ax, x, ys, alphas=None, color="k", sampling=1, offset=0.2, **kwargs):
@@ -7,7 +8,7 @@ def waterfall(ax, x, ys, alphas=None, color="k", sampling=1, offset=0.2, **kwarg
 
     Parameters
     ----------
-    ax: axis
+    ax: Axes
     x: array
         1-d array for shared x value
     ys: array
@@ -42,7 +43,7 @@ def independent_waterfall(
 
     Parameters
     ----------
-    ax: axis
+    ax: Axes
     independents: array
         Collection of independent variables to label by
     x: array
@@ -84,3 +85,21 @@ def independent_waterfall(
                 independents[indicies[-1]],
             ]
         )
+
+
+def refresh_figure(fig):
+    """
+
+    Parameters
+    ----------
+    fig: Figure
+
+    Returns
+    -------
+
+    """
+    fig.patch.set_facecolor("white")
+    fig.canvas.draw_idle()
+    fig.canvas.flush_events()
+    display.clear_output(wait=True)
+    display.display(fig)

@@ -1,11 +1,10 @@
 from deepnmf.companion.nmf import decomposition, iterative_decomposition
 from federation.utils.transforms import default_transform_factory
-from federation.utils.plotting import independent_waterfall
+from federation.utils.plotting import independent_waterfall, refresh_figure
 from federation.utils.maths import min_max_normalize
 import numpy as np
 from matplotlib.pyplot import figure
 import matplotlib as mpl
-from IPython import display
 
 
 class NMFCompanion:
@@ -222,12 +221,7 @@ class NMFCompanion:
         self.update_residual_plot()
 
         # Polish the rest off
-        self.fig.tight_layout()
-        self.fig.patch.set_facecolor("white")
-        self.fig.canvas.draw_idle()
-        self.fig.canvas.flush_events()
-        display.clear_output(wait=True)
-        display.display(self.fig)
+        refresh_figure(self.fig)
 
     def __len__(self):
         if self.dependent is None:
