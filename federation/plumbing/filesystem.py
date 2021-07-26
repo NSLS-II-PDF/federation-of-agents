@@ -34,7 +34,8 @@ class DirectoryAgent:
         independent_from_path: Callable
             Function to return independent variable array from path object
         data_transform: Callable
-            Transform x, y from raw files to x, y for model input
+            Transform function(data) to return x, y for model input.
+            Data is shape (2, n_datapoints)
             For e.g. this could be used to trim the x,y onto a particular domain of interest, and/or
             perform normalization necessary for the model.
         file_ordering: Callable, None
