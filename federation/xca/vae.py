@@ -3,6 +3,7 @@ import numpy as np
 from federation.xca import XCACompanion
 from federation.utils.transforms import default_transform_factory
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 from matplotlib.colors import Normalize
 from IPython import display
 from pathlib import Path
@@ -26,7 +27,8 @@ class VAECompanion(XCACompanion):
 
         Parameters
         ----------
-        model_path: str, Path
+        encoder_path: str, Path
+        decoder_path: str, Path
         model_tth_: array
             Model 2-theta linspace
         exp_tth: array
@@ -35,6 +37,7 @@ class VAECompanion(XCACompanion):
             Optional transformation for independent variables in tell.
             Useful for converting "scientific" space coordinates to less interpretable or reduced
             "beamline" space coordinates.
+        ax: Axes, None
         latent_dims: list, tuple, stride of 2
             Latent dimensions of interest
         kwargs
@@ -47,7 +50,7 @@ class VAECompanion(XCACompanion):
         )
         self.model = VAE(
             encoder=tf.keras.models.load_model(str(self.encoder_path)),
-            decoder=tf.keras.model.load_model(str(self.decoder_path)),
+            decoder=tf.keras.models.load_model(str(self.decoder_path)),
         )
         self.model_tth = model_tth
         self.exp_tth = exp_tth
@@ -64,6 +67,9 @@ class VAECompanion(XCACompanion):
         else:
             self.ax = ax
             self.fig = ax.figure
+        self.scatters = list()  # List of scatter plots from observe
+        self.max_error = None  # Used for default plot size normalization
+        self.hold = False  # Keep the scatter on the plot
 
     def predict(self, intensity):
         """
@@ -158,8 +164,21 @@ class VAECompanion(XCACompanion):
         """
         # Clear plot
         self.ax.cla()
-
-        z_mean, _, _ = self.predict(X)
+        X = tf.convert_to_tensor(self.preprocess(self.model_tth, X), dtype=tf.float32)
+        output = self.model(X, training=False)
+        z_mean = output["z_mean"].numpy()
+        self.max_error = tf.reduce_max(
+            tf.keras.losses.mean_squared_error(
+                tf.reshape(X, (tf.shape(X)[0], tf.shape(X)[1])),
+                tf.reshape(
+                    output["reconstruction"],
+                    (
+                        tf.shape(output["reconstruction"])[0],
+                        tf.shape(output["reconstruction"])[1],
+                    ),
+                ),
+            )
+        )
         if isinstance(labels[0], float):
             self.ax.scatter(
                 z_mean[:, self.latent_dim_1],
@@ -169,46 +188,75 @@ class VAECompanion(XCACompanion):
                 norm=Normalize(np.min(labels), np.max(labels)),
             )
         else:
-            for label in labels:
+            for label in set(labels):
                 mask = [label == y for y in labels]
                 self.ax.scatter(
                     z_mean[mask, self.latent_dim_1],
                     z_mean[mask, self.latent_dim_2],
                     label=label,
                 )
+        self.ax.legend()
 
-    def update_plot(self, independent=None):
+    def update_plot(self, independent=None, max_error=None):
         """
 
         Parameters
         ----------
         independent: ndarray
             Optional independent variable to choose from for categortical
+        max_error: float
+            Optional maximum reconstruction error used for normalizing the size of the points.
+            In None given, the size will be normalized by the greatest reconstruction error
+            in the dependent variables.
+            The size will be proportionate to the matplotlib default and this normalized value.
+            That is, values bigger than the max_error will appear larger than the standard scatter in prime_plot.
 
         Returns
         -------
 
         """
+        # Clears plot if hold is off and previous scatter plots in list
+        if not self.hold and self.scatters:
+            for scatter in self.scatters:
+                scatter.remove()
+                del scatter
+            self.scatters = list()
 
         if independent is None:
             idx = -1
         else:
             idx = np.argwhere(
                 self.coordinate_transform.forward(*independent) == self.independent
-            )
+            )[0, 0]
+
         z_mean = self.dependent[idx, :]
-        z_log_sigma = self.dependent_log_sigma[idx, :]
-        size = self.dependent_reconstruction_error[idx] / np.max(
-            self.dependent_reconstruction_error
+        if max_error is None:
+            if self.max_error is None:
+                max_error = np.max(self.dependent_reconstruction_error)
+            else:
+                max_error = self.max_error
+        size = (
+            self.dependent_reconstruction_error[idx]
+            / max_error
+            * (mpl.rcParams["lines.markersize"] ** 2)
         )
-        self.ax.errorbar(
-            z_mean[self.latent_dim_1],
-            z_mean[self.latent_dim_2],
-            xerr=np.exp(z_log_sigma[self.latent_dim_1]),
-            yerr=np.exp(z_log_sigma[self.latent_dim_2]),
-            fmt="o",
-            s=size,
+        # z_log_sigma = self.dependent_log_sigma[idx, :]
+        # self.ax.errorbar(
+        #     z_mean[self.latent_dim_1],
+        #     z_mean[self.latent_dim_2],
+        #     xerr=z_log_sigma[self.latent_dim_1],
+        #     yerr=z_log_sigma[self.latent_dim_2]
+        # )
+        self.scatters.append(
+            self.ax.scatter(
+                z_mean[self.latent_dim_1],
+                z_mean[self.latent_dim_2],
+                s=size,
+                color="black",
+                label=f"Measured {self.independent[idx]}",
+            )
         )
+        self.ax.legend()
 
         # Polish the rest off
         self.fig.patch.set_facecolor("white")
