@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.colors import Normalize
 from pathlib import Path
-from xca.ml.tf_models import VAE
+from xca.ml.tf.vae import VAE
 
 
 class VAECompanion(XCACompanion):
