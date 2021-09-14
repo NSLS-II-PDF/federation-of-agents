@@ -106,7 +106,7 @@ class CNNCompanion(XCACompanion):
     def ask(self):
         raise NotImplementedError
 
-    def observe(self):
+    def report(self):
         raise NotImplementedError
 
     def record_output_dependents(self, path):
@@ -216,7 +216,7 @@ class PlotCompanion(CNNCompanion):
         # Polish the rest off
         refresh_figure(self.fig)
 
-    def observe(self, *args, **kwargs):
+    def report(self, *args, **kwargs):
         self.update_plot(**kwargs)
 
 

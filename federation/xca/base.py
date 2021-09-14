@@ -58,7 +58,7 @@ class XCACompanion:
         """Ask the agent for some advice"""
         raise NotImplementedError
 
-    def observe(self):
+    def report(self):
         """Allow the agent to summarize observations"""
         raise NotImplementedError
 

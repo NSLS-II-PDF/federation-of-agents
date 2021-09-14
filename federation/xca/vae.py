@@ -67,7 +67,7 @@ class VAECompanion(XCACompanion):
         else:
             self.ax = ax
             self.fig = ax.figure
-        self.scatters = list()  # List of scatter plots from observe
+        self.scatters = list()  # List of scatter plots from report
         self.max_error = None  # Used for default plot size normalization
         self.hold = False  # Keep the scatter on the plot
 
@@ -261,5 +261,5 @@ class VAECompanion(XCACompanion):
         # Polish the rest off
         refresh_figure(self.fig)
 
-    def observe(self, *args, **kwargs):
+    def report(self, *args, **kwargs):
         self.update_plot(**kwargs)

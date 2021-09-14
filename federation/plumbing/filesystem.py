@@ -140,7 +140,7 @@ class ObservationalDirectoryAgent(DirectoryAgent):
         while True:
             if len(self.path_list()) != len(self):
                 self.load_dir()
-                self.companion.observe(**kwargs)
+                self.companion.report(**kwargs)
             if timeout and time() - start_time > timeout:
                 break
             sleep(sleep_delay)

@@ -211,7 +211,7 @@ class NMFCompanion:
         """Ask the agent for some advice"""
         raise NotImplementedError
 
-    def observe(self, **kwargs):
+    def report(self, **kwargs):
         """Allow the agent to summarize observations"""
         self.update_decomposition()
         self.update_plot_order()
