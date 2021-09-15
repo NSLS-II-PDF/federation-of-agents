@@ -31,8 +31,8 @@ Install from github and set up environment::
     $ cd xca
     $ python -m pip install -e .
     $ cd ../
-    $ git clone https://github.com/maffettone/DeepNMF
-    $ cd DeepNMF
+    $ git clone https://github.com/maffettone/constrained-matrix-factorization
+    $ cd constrainedmf
     $ python -m pip install -e .
     $ cd ../
     $ git clone https://github.com/NSLS-II-PDF/federation-of-agents
