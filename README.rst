@@ -21,10 +21,10 @@ Features
 
 User Instructions
 -----------------
-At the moment some of the requirements are not available on PyPi.
+At the moment some of the requirements are not available on PyPi. Please use a system python > 3.8.
 Install from github and set up environment::
 
-    $ python3 -m venv agent_env
+    $ python3.8 -m venv agent_env
     $ source agent_env/bin/activate
     $ python -m pip install --upgrade pip wheel
     $ git clone https://github.com/maffettone/xca
@@ -32,7 +32,7 @@ Install from github and set up environment::
     $ python -m pip install -e .
     $ cd ../
     $ git clone https://github.com/maffettone/constrained-matrix-factorization
-    $ cd constrainedmf
+    $ cd constrained-matrix-factorization
     $ python -m pip install -e .
     $ cd ../
     $ git clone https://github.com/NSLS-II-PDF/federation-of-agents
