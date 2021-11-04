@@ -1,4 +1,4 @@
-from constrainedmf.companion.nmf import decomposition, iterative_decomposition
+from constrainedmf.wrappers.scattering import decomposition, iterative_decomposition
 from federation.utils.transforms import default_transform_factory
 from federation.utils.plotting import independent_waterfall, refresh_figure
 from federation.utils.maths import min_max_normalize
