@@ -7,5 +7,5 @@ pandas
 IPython
 matplotlib
 xarray
-constrainedmf
+constrainedmf=0.1.0
 torch
