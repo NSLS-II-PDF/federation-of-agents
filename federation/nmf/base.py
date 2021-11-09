@@ -1,3 +1,5 @@
+import torch.cuda
+
 from constrainedmf.wrappers.scattering import decomposition, iterative_decomposition
 from federation.utils.transforms import default_transform_factory
 from federation.utils.plotting import independent_waterfall, refresh_figure
@@ -20,6 +22,7 @@ class NMFCompanion:
         normalize=True,
         fig=None,
         cmap="tab10",
+        device=None,
     ):
         """
         Base class for NMF companion agent.
@@ -81,6 +84,15 @@ class NMFCompanion:
                 "kernel_width is a required argument for NMFCompanion when deconvolutional mode is used."
             )
 
+        if device is None:
+            self.device = (
+                torch.device("cuda")
+                if torch.cuda.is_available()
+                else torch.device("cpu")
+            )
+        else:
+            self.device = torch.device(device)
+
     def update_decomposition(self):
         if self.deconvolutional:
             mode = "Deconvolutional"
@@ -95,6 +107,7 @@ class NMFCompanion:
             initial_components=self.fixed_components,
             fix_components=[True for _ in range(len(self.fixed_components))],
             mode=mode,
+            device=self.device,
         )
 
     def tell(self, x, y):
@@ -254,4 +267,5 @@ class AutoNMFCompanion(NMFCompanion):
                 n_components=self.n_components,
                 mode=mode,
                 normalize=self.normalize,
+                device=self.device,
             )
