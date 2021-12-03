@@ -1,5 +1,4 @@
 from queue import Queue
-from event_model import RunRouter
 from bluesky_adaptive.utils import extract_event_page
 from bluesky_adaptive.recommendations import NoRecommendation
 
@@ -14,13 +13,6 @@ def index_reccomender_factory(
 ):
     if queue is None:
         queue = Queue()
-
-    if cache_callback is None:
-        prelim_callbacks = ()
-    else:
-        prelim_callbacks = [
-            cache_callback,
-        ]
 
     def callback(name, doc):
         """Assumes the start doc gives you the sample location,
@@ -52,5 +44,4 @@ def index_reccomender_factory(
         else:
             print(f"Document {name} is not handled")
 
-    rr = RunRouter([lambda name, doc: ([prelim_callbacks, callback], [])])
-    return rr, queue
+    return callback, queue
