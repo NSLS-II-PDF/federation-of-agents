@@ -9,7 +9,6 @@ def index_reccomender_factory(
     sample_data_key,
     *,
     queue=None,
-    cache_callback=None,
 ):
     if queue is None:
         queue = Queue()
