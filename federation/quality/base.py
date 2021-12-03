@@ -57,6 +57,8 @@ class Agent:
         """
         if x is not None:
             self.current = x
+        if y is None:
+            return
         self.counter[self.current] += 1
         if self.current in self.cum_sum:
             self.cum_sum[self.current] += y
