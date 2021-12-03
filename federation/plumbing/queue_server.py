@@ -1,24 +1,28 @@
-from queue import Queue
 from bluesky_adaptive.utils import extract_event_page
 from bluesky_adaptive.recommendations import NoRecommendation
 
 
 def index_reccomender_factory(
+    *,
     adaptive_object,
     sample_index_key,
     sample_data_key,
-    *,
-    queue=None,
+    queue_server,
+    # TODO: Add more sensible defaults for these args.
+    mv_kwargs=None,
+    count_args=(),
+    count_kwargs=None,
 ):
-    if queue is None:
-        queue = Queue()
+    if mv_kwargs is None:
+        mv_kwargs = {}
+    if count_kwargs is None:
+        count_kwargs = {}
 
     def callback(name, doc):
         """Assumes the start doc gives you the sample location,
         and the event_page gives quality info. The current index is updated at the start
         But the Agent quality matrix is only updated at tell."""
         # TODO: Validate the assumptions on formats
-        # TODO: Update queue signatures from .put to ...?
         print(f"callback received {name}")
 
         if name == "start":
@@ -37,10 +41,21 @@ def index_reccomender_factory(
             try:
                 next_point = adaptive_object.ask(1)
             except NoRecommendation:
-                queue.put(None)
+                queue_server.queue_item_add(None)
             else:
-                queue.put({sample_index_key: next_point})
+                queue_server.queue_item_add(
+                    item_name="mv",
+                    item_args=[next_point],
+                    item_kwargs=mv_kwargs,
+                    item_type="plan",
+                )
+                queue_server.queue_item_add(
+                    item_name="count",
+                    item_args=[*count_args],
+                    item_kwargs=count_kwargs,
+                    item_type="plan",
+                )
         else:
             print(f"Document {name} is not handled")
 
-    return callback, queue
+    return callback
