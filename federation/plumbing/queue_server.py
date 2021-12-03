@@ -43,18 +43,22 @@ def index_reccomender_factory(
             except NoRecommendation:
                 queue_server.queue_item_add(None)
             else:
-                queue_server.queue_item_add(
+                response = queue_server.queue_item_add(
                     item_name="mv",
                     item_args=[next_point],
                     item_kwargs=mv_kwargs,
                     item_type="plan",
                 )
-                queue_server.queue_item_add(
+                if response.json()["success"] is False:
+                    raise RuntimeError("Queue Server failed to add item for mv plan")
+                response = queue_server.queue_item_add(
                     item_name="count",
                     item_args=[*count_args],
                     item_kwargs=count_kwargs,
                     item_type="plan",
                 )
+                if response.json()["success"] is False:
+                    raise RuntimeError("Queue Server failed to add item for count plan")
         else:
             print(f"Document {name} is not handled")
 
